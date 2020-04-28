@@ -1,0 +1,304 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+In this course, you will learn how create interactive data visualizations with the highcharter package. Highcharter is widely used in financial industry and that is the focus of this course but the code and learnings are applicable to a variety of data. If you want to take your Shiny applications or RMarkdown HTML reports to the next level, this is the course for you! 
+
+Chapter 1 is titled "Introduction". It consists of three lessons. Lesson 1.1 is titled "Introduction to Highcharter" is an introduction to Highsoft, the JavaScript library, and highcharter, the R hook into that JS library.  It will cover how a hello world highcharter is different from a ggplot-created static plot. We will also cover that highcharter is an "HTML widget", a term that confuses many R users who are new to these hooks. Lesson 1.2 is titled "ETF data" and introduces our data, prices and returns for 3 ETFs.  Financial data tends to come in the form of either an xts-time series object or a tibble. We will briefly look at these different data structures (and suggest that users look at the other DC courses which cover them more thoroughly for a refresher) because the following chapters will be oriented around how highcharter works smoothest depending on the data. Lesson 1.3 is titled "Our first highcart" and is our first chance to pass our data to the `hchart()` function and see the results, which turn out to be quite nice for one line of code. We will also look at what happens when we pass other pieces of our data directly to `hchart()`, with varying results.  By the end of Chapter 1, a student should understand what highcharter is, why it's useful for building visualizations and how to build a hello world example using stock price data with just the `hchart()` function.
+
+Chapter 2 is titled "Highcharter for xts and time series data". This chapter will focus on the using the `highchart()` function, with the argument `type = stock` to create line charts, with a date on the x-axis.  Lesson 2.1 is titled "Charting One ETF xts" and explains that Highcharts has a library called Highstock, which is purpose-built for visualzing time series and works very well for stock data and any financial time series.  The lesson explains how to use this by calling `highchart(type = "stock")` and then add data with `hc_add_series()`.  Lesson 2.2 is titled "Charting Multiple ETF xts" and explains how to use the ` %>% ` and ` %>% ` and `hc_add_series` to add more data to the chart. We will also add a title with `hc_title` and some other labels. Students should be getting comfortable with building highcharts in layers. Lesson 2.3 is titled "Add a Rolling Mean" and will explore how we might calculate the rolling returns of one of our ETFs, and then chart the returns and rolling returns on one visualization.  Again, we are emphasizing the idea of layering and using ` %>% ` to build up a chart.  Leesson 2.4 is titled "Adding Nice Labels" and  will look at adding things suchs a title, subtitle and flags at events.  By the end of Chapter 2, the student should feel comfortable taking an xts object and creating a line chart, then adding more time series/lines and labels until a detailed chart is constructed. The student will have visualized all 3 ETFs on one chart, and 1 ETF with its rolling mean on another chart. 
+
+Chapter 3 is titled "Highcharter for tidy tibble data". In this chapter we will work with the tibble that we created in Chapter 1.  Lesson 3.1 is titled "Charting One ETF tibble" and explains how to create one line chart when financial data is in tibble format. It introduces the use of `hchart(data, type = "line", hcaes(y = return, x = date ))` for creating a line chart. Lesson 3.2 is titled "Charting Multiple ETFs from a tidy tibble" and explores how to create multiple line charts when data is in long, tidy format by using groups. Lesson 3.3 is titled "Beyond Line Charts!" and covers how the `hchart()` function can be used to create scatter plots, histograms, density and columns charts by changing the `type` argument.  Lesson 3.4 is titled "Scatter with regression line" and explains how to create a scatter plot with one ETF on the x-axis and another on the y-axis, and then add a regression line. 
+
+By the end of Chapter 3, the student will have visualized ETF data from a tidy tibble with a logic that is similar to ggplot, and will have learned how to create more than just line charts.  They should now be prepared to work with both xts objects and tidy tibbles. 
+
+Chapter 4 is titled "Highcharter with RMarkdown and Shiny". In this chapter, we will explore how to use our highcharter visualization on RMarkdown reports and Shiny applications (and we will make note that the student should be familiar with Shiny or take a look at the datacamp course).  Lesson 4.1 is titled "Highcharter with RMarkdown" and explains how to use highcharter visualization in RMarkdown reports. Lesson 4.2 is titled "Shiny Applications" and explains how to use the `renderHighchart` and `highchartOutput` functions in Shiny applications. This is how to build a highcharter inside a Shiny app.  Lesson 4.3 is titled "xts and Shiny" and explores how to pass reactive values to the `hc_add_series` code flow. The student will learn how to create charts that respond to user inputs and xts financial data. Lesson 4.4 is titled "Tidy tibbles in Shiny" and demonstrates how to pass reactive tidy tibbles to `hchart()` in a Shiny app. 
+
+By the end of Chapter 4, the student should be comfortable passing both xts and tidy tibbles to highcharter, inside of RMarkdown files and Shiny applications. 
+
+
+
+
+```{r setup, include = FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, comment = NA)
+library(tidyverse)
+library(tidyquant)
+library(highcharter)
+library(timetk)
+library(tibbletime)
+```
+
+Thoughts: 
+To start, get three ETF price streams and convert to returns. 
+Why? First, we will pull out one stream. It's an xts object. 
+We can chart it on highcharter with
+highchart(type = "stock") %>% 
+hc_add_series(returns$SPY)
+
+
+
+
+Then two, then ask the student to pull out the third. 
+
+JKR: what should a student learn? what is highcharter, why is it nice for time series? how build those time series and customize them
+how does it work with tidy data
+
+Chapter 1 Introduction to Highcharter and our data (ggplot = Introduction)
+
+Lesson 1 What is highcharter and highcharts and a hello world example (ggplot = introduction)
+- we are going to focus on financial data but it's a flexible and versatile tool, and one of hte most popular data vis tools in the world; how is it different from ggplot? what is an html widget
+it's a Javascript library, and highcharter is the R package that let's write R code to create interactive visualizations. It's great for finance but useful for all sorts. 
+
+Lesson 2 
+our data, 3 ETF monthly returns for last 5 years and OHLC prices (ggplot = grammar of graphics)
+
+Lesson 3 (ggplot = ggplot2, the basics, ggplot, layers, themes)
+hchart out of the box, one command and looks pretty good: congrats you're a javascript data visser now! try hchart(fbclose) - that's a nice time line, same for our returns, hchart(fb$FB.Open, type = "scatter") #line, nothing, area  
+compare to ggplot and plot; 
+the hchart function versus the highchart function
+those have been made for you, try to replace with a different ETF, or a diff price, or a return?
+```{r}
+highchart(type = "stock") %>% 
+hc_add_series(fb$FB.Volume,
+              type = "line",
+                name = "Difference, in ppt",
+                color = "#F0A1EA") %>% 
+  hc_tooltip()
+```
+
+
+
+```{r}
+
+hchart(fb$FB.Open) 
+hchart(fb)
+
+fb_tbl<- 
+  fb %>% 
+  tk_tbl(preserve_index = TRUE, rename_index = "date") %>% 
+  select(date, adjusted = FB.Adjusted) %>% 
+  as_tbl_time(index = date)
+
+  hchart(fb_tbl, 
+         type = "line", 
+         hcaes(x = date, y = adjusted))
+```
+
+
+Lesson 4 
+
+Chapter 2 Time series and XTS objects: highstocks
+
+Lesson 1 highchart(type = "stock") %>% hc_add_series(returns$SPY)
+- note how we don't mention the date index at all, yet it appears on the x-axis and when hover with the tooltip
+
+Lesson 2 add a second series and name them so the tooltip displays both
+- notice the order they appear in the legend, it's order we add them.  
+
+Lesson 3 rolling stats? v. imp in finance and can pass easily to highcharter
+
+Lesson 4 title, subtitle, flags at events, aesthetic: remember, data vis's have to be engaging
+
+Chapter 3 Tibbles and tidy data: what if have tidy data?
+
+Lesson 1 hchart(type, hcaes) line chart; can use hc_add_series, but there's not time index. need to tell highcharter that the x-axis is the date, same as with ggplot. Line charts, in case don't want to work with xts or prefer tibbles
+
+Lesson 2 multiple
+- and adding recession bands
+- notice the order they appear is now alphabetical - does that matter? 
+
+Lesson 3 rolling stats
+
+Lesson 4: scatter
+
+Chapter 4: Beyond  line charts or Shiny and RMarkdown: Shiny Monte Carlo example? 
+
+Lesson 1: renderHighchart and highchartOutput, how they work? 
+
+Lesson 2: an xts example
+
+Lesson 3: a tibble example
+
+Lesson 4: 
+
+Montecarlo
+stacked area chart for when sum to 100? Not my favorite but popular
+
+Book thoughts: 
+
+highcharter was used in Shiny for time series, rolling calculations, capm beta scatter with regression line, rolling r-squared, meaning rolling model results, monte carlo, stacked standard deviation contribution, hc_chart(type = "area") probably too much; then i have the econ data where I make it a tibble for a column chart, multiple line charts, could do a hist and a density easily too
+
+returns, standard dev, kurto
+
+```{r}
+
+load("recess.RData")
+series <- list(
+  list(
+    data = c(29.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4)
+  )
+)
+
+series <- list(
+  list(
+    name = 'Hola linea',
+    color = 'red',
+    data = c(29.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4)
+  )
+)
+
+highchart() %>%
+  hc_add_series_list(series)
+```
+
+
+```{r}
+series1 <- list(
+  list(
+    name = 'Hola linea',
+    color = 'red',
+    data = c(29.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4)
+  ),
+  list(
+    name = 'Reverse!',
+    color = 'green',
+    data = c(54.4, 95.6, 194.1, 216.4, 148.5, 135.6, 176, 144, 129.2, 106.4, 71.5, 29.9)
+  )
+)
+
+highchart(type = "chart") %>% 
+  hc_add_series_list(series1)
+
+# run with stock and it's looking for an index
+highchart(type = "stock") %>% 
+  hc_add_series_list(series1)
+
+```
+
+Note how is defaulting to a line chart. 
+
+```{r}
+
+vec1 <- c(29.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4)
+vec2 <- c(54.4, 95.6, 194.1, 216.4, 148.5, 135.6, 176, 144, 129.2, 106.4, 71.5, 29.9)
+highchart(type = "chart") %>%
+  hc_add_series(
+    name = 'Hola linea',
+    color = 'red',
+    data = vec1
+  ) %>%
+  hc_add_series(
+    name = 'Reverse!',
+    color = 'green',
+    data = vec2
+  ) %>% 
+  hc_xAxis(lineWidth = 5,
+             max = 7,
+             min = 1,
+           labels = list(align = "center" ,
+                         style = list(
+                           fontSize = "11px",
+                           fontWeight = "bold",
+                           color = "blue"
+                         )))
+```
+
+Specifically, any Highcharts API options can be access by add hc_ infront of the function e.g. hc_xAxis() calls the xAxis API option, hc_tooltip() calls the tooltip API option, etc.
+
+
+```{r}
+data(citytemp)
+hc1 <- highchart(type = "chart") %>%
+  hc_xAxis(categories = citytemp$month) %>%
+  hc_add_series(name = "Tokyo", data = citytemp$tokyo) %>%
+  hc_add_series(name = "London", data = citytemp$london)
+hc1
+```
+
+```{r}
+citytemp_tidy <- 
+  citytemp %>%
+  mutate(number = seq(1:12)) %>% 
+  select(number, month, tokyo, london) %>% 
+  gather(city, temp, -number, -month)
+
+hc2 <- 
+  hchart(citytemp_tidy, 
+       type = "line",
+       hcaes(y = temp, x = number, group = city)) # %>% 
+  # hc_xAxis(categories = citytemp_tidy$number)
+
+hc2
+```
+
+```{r}
+length(hc1$x$hc_opts$series)
+hc1$x$hc_opts$series
+hc1$x$hc_opts$series[[1]]$data
+```
+
+```{r}
+hc2$x$hc_opts$series
+```
+
+```{r}
+hc2$x$hc_opts$series[[2]]$data[[1]] %>% str()
+```
+
+
+The dataframe citytemp_tidy had only 3 variables (month, city, temp). hchart not only passes these variables as data, it then passes the variables assigned to the y and x arguments (y = temperature, x = month).
+But wait, there is no x named element? The variable assigned to x was renamed to name, *which is not to be confused with the series name `hc2$x$hc_opts$series[[2]]$name`. This is because the variable assigned to x was of class character. Highcharts cannot chart a non-numeric value to the x-axis. Instead, highcharter automatically maps string values assigned to x to the list element name. Index values are then generated for x by the API and each is labeled by the name value. So, if it were a number, like 1-12, it would be labeled as x. Since it's not, it takes the string, converts to name, then charts name by the index. 
+
+```{r}
+fb <- getSymbols("FB", auto.assign = FALSE)
+hchart(fb$FB.Open, type = "line") #line, nothing, area, looks good, but notice the tool tip isn't displaying the date, and it has the decimal out waaay to the future
+hc3 <- 
+  highchart(type  = "stock") %>% # see what happens if I don't put type = stock
+  hc_add_series(fb$FB.Open)
+
+hc3
+```
+
+if change to type = 'chart', it will simply print the JS time stamp, that's interesting, it's making the conversion on both, but on chart, it prints that milliseconds on the x axis. same chart though. 
+
+```{r}
+
+
+hc_fb$x$hc_opts$series
+```
+
+in xts, it converts the date to a timestamp, which is some weird huge number value. that's what underlies the chart.In JavaScript, a timestamp is the number of milliseconds that have passed since January 1, 1970.
+
+datacamp course thoughts: 
+stocks
+or econ too?. I think yes, the employment data is nice.  
+types: scatter, hist, line
+scatter for returns is fine, 
+also scatter for lm
+hist better for econ? 
+line with xts
+Chapter 1
+Thoughts: 
+intro to highcharts and highcharter, what is it
+xts and tibble? 
+Lesson 1 hchart versus highchart(type = "stock")
+- note that I don't tell it it's time series. it grabs the index. that's easy! 
+Lesson 2
+Lesson 3
+
+
+
+Chapter 2: visualizing xts objects
+
+
+Chapter 3: visualizing tibble objects
+
+Chapter 4: visualing models, forecasts and simulations
+tooltip tips too; exporting the image; 
+recession bands: xts and tibbles
+- linear model
+- acf
+-monte carlo
+
+

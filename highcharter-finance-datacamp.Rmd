@@ -1,0 +1,160 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r setup, include = FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE)
+library(tidyverse)
+library(tidyquant)
+library(highcharter)
+```
+
+Course deliverables:
+Course specs by September 28. 
+Course specs refer to creating a thorough course outline with capstone exercises for each of the 4 chapters, a satisfactory sample lesson on our authoring tool, and a round of feedback.
+[Lesson is a audio plus the exercises. Building on the one that did before.]
+This process should take no more than 4 weeks. 
+A draft of all content for chapter 1 by October 21 [Includes the script for the voiceover, or the actual voiceovers?] 3 slide decks and exercises, first good stab for chapter 1, exercises, slides, and transcripts
+This refers to completing the content for chapter 1 based on our quality standards. 
+This usually takes about 3 weeks.
+A draft of all content for all chapters by December 1. 
+This takes approximately 2 weeks per subsequent chapter (+ (3 chapters*2 = 6 weeks). [Dec 15th] 
+A completed course satisfactory to us in form and content by January 1.   
+This takes an additional 3 weeks for final tweaks. 
+
+
+## Chapter 1: Introduction to highcharter
+
+* Lesson 1.1 - Introduction to highcharter 
+  * Highcharts, the JavaScript library
+  * highcharter, the R hook into Highcharts
+  * how is this different from a ggplot
+* Lesson 1.2 - ETF data
+  * 3 ETFs, prices and returns
+  * an xts or time series data object
+  * a tidy tibble
+* Lesson 1.3 - Our first highcart
+  * hchart(xts object)
+  * hchart(the tibble object)
+  * Evaluating the model
+
+## Chapter 2: Highcharter for xts and time series
+
+* Lesson 2.1 - Charting One ETF xts
+  * highchart(type = stock) to tell highcharter we are using the 'stock' library
+  * %>% hc_add_series to add data to the chart
+* Lesson 2.2 - Charting Multiple ETF xts 
+  * %>% hc_add_series to add another time series
+  * %>% hc_add_series to add another time series
+  * the tooltip displays all three on hover
+* Lesson 2.3 - Add a Rolling Mean
+  * calculate a rolling mean
+  * add to the chart
+  * tooltip display and name of series
+* Lesson 2.4 - Creating Nice Labels
+  * title
+  * subtitle
+  * y and x axis
+  * flags
+
+## Chapter 3: Highcharter for tidy tibble data
+
+* Lesson 3.1 - Charting One ETF tibble
+  * a line chart with hchart(type = "line")
+  * index(etf_xts) v. etf_tibble$date
+  
+* Lesson 3.2 - Charting Multiple ETFs from a tidy tibble
+  * many line charts with hchchart(type = "line", hcaes(x, y, group, color))
+* Lesson 3.3 - Beyond Line Charts!
+  * scatter plots
+  * histogram
+  * density
+* Lesson 3.4 - Scatter with regression line
+  * scatter plot
+  * add regression line
+
+## Chapter 4: Highcharter for RMarkdown and Shiny
+
+* Lesson 4.1 - RMarkdown HTML 
+  * Creating charts in a code chunk
+* Lesson 4.2 - Shiny Applications
+  * renderHighchart
+  * highchartOutput
+* Lesson 4.3 - XTS objects in Shiny
+  * hc_add_series and reactives
+* Lesson 4.4 - Tidy tibbles in Shiny
+  * hchart and reactives
+
+  
+Script:
+![spy_tibble](https://assets.datacamp.com/production/repositories/3344/datasets/c8c1bb21452433a983ceca40a296d8657fb09075/Screen Shot 2018-08-07 at 1.15.04 PM.png)
+1. Welcome to our chapter on data frames or tibbbles, which is another name for a data frame that you will hear in the R community. If data frames and tibbles are new to you, I recommend having a quick look at the "Data Frames" lesson from "Introduction to R".  Tibbles have a different structure than XTS objects such as the one we visualized in the last chapter and we will use a different highcharter code flow to chart them.  Before we do that, though, let's review the tibble that holds data for one  ETF, the price history of SPY.
+
+
+![etf_tibble](https://assets.datacamp.com/production/repositories/3344/datasets/c8c1bb21452433a983ceca40a296d8657fb09075/Screen Shot 2018-08-07 at 1.15.04 PM.png)
+ - Has a date column
+
+![](https://assets.datacamp.com/production/repositories/3344/datasets/104030b8229d54aca04b50b951fdea19eaceda45/Screen Shot 2018-08-07 at 1.25.37 PM.png)
+-no date column, dates stored in `index`
+
+2. Have a look at the tibble and notice it has 3 columns: a column called date that holds the date of each observation, a column called 'ETF' that holds the name of the ETF, a column called price that holds the price.  When we visualize this tibble with highcharter (or indeed any data vis library), we need to explicitly tell highcharter which column to use for our x axis data and which for our y axis data. It won't 'just know' that date goes on the x-axis because sometimes it won't.  If, for example, this weren't a time series, there might not be a column called date.
+
+
+
+3. Here we are looking at the tibble of price data and the xts of price data. Recall the previous chapter when we passed the xts object to highcharter. It has no date column - the dates are held in the index and we did NOT tell highcharter that the index went on the x-axis. Highcharter just knew to use the index. This is a huge difference between xts financial time series and tibble financial time series. With xts, we pass in the object and highcharter knows to put the index on the x-axis. With tibbles we have to tell highcharter to put the 'date' column on the x-axis.  So, how do we tell highcharter this information about the x and y axis?
+
+
+1. `hchart()` starts the highcharter flow
+2. pass it our tibble: `hchart(etf_tibble...)`	2. pass it our tibble: `hchart(spy_tibble...)`
+3. use `hcaes` to set x and y axis data	3. use `hcaes` to set x and y axis data
+4. `hchart(etf_tibble, hcaes(x = date, y = price))`	4. hcaes = highcharter + aesthetic
+5. wait, how does hchart know we want a line chart? `hchart(etf_tibble, type = "line", hcaes(x = date, y = price))`	5. 
+`hchart(etf_tibble, hcaes(x = date, y = price))`
+6. How does hchart know we want a line chart? `type = "line"`
+4. The way to tell highcharter which column to use for the x-axis and y-axis is with the `hcaes()` function, which is similar to the `aes` function from `ggplot`.  Let's look at the code flow. We first call the `hchart()` function to start the highcharter code flow. Then we pass it `spy_tibble`. Now highcharter  knows what data object to work with, but it doesn't know which column to use for the x-axis data and which for the y-axis data. We communicate that with hcaes(x = date, y = price).  Now highcharter is aware that date goes on the x-axis and price goes on the y-axis. How does it know we want a line chart? We use type = "line", and we will see later how that let's us construct different types of charts. Note that this hchart-hcaes code flow requires us to be more explicit than we were with the xts object, but we will see how it can be more flexible and efficient for charting tidy tibbles that has for example all 3 ETFs price data. First though, let's look at the tibble to hchart to hcaes code flow and results.
+
+
+```
+hchart(spy_tibble,    
+       hcaes(x = date, 
+             y = price)
+       type =  "line")
+```
+
+![](https://assets.datacamp.com/production/repositories/3344/datasets/0c63e89d24243d8eb06db8c3da0cc7f31d8b7c72/Screen Shot 2018-08-07 at 2.12.05 PM.png)
+
+5. Again, we start with hchart, pass in our tibble, type="line", and call hcaes(x=date, y =price)). Look closely at the x and y axis, notice that date is on the x-axis.
+
+
+
+
+
+![](https://assets.datacamp.com/production/repositories/3344/datasets/e6502d80a9b5943d40292489473421e464b5f821/Screen Shot 2018-08-07 at 5.44.02 PM.png
+)
+6. Once we have the hchart flow, we can change the color with color = "green", and add a title, subtitle, and dollar sign label the same way as we did in the previous chapter.
+  
+```{r}
+library(timetk)
+spy_tibble <- tq_get("SPY", 
+       from = "2013-01-01") %>% 
+  mutate(ETF = "SPY") %>% 
+  select(ETF, date, price = adjusted) 
+  head()
+
+hchart(spy_tibble,
+       hcaes(x = date, 
+             y = price),
+       type = "line",
+       color = "green") %>% 
+  hc_title(text = "SPY ETF") %>% 
+  hc_subtitle(text = "price") %>% 
+  hc_yAxis(labels = 
+           list(format = "${value}"))
+
+highchart() %>% 
+  hc_add_series(spy_tibble, type = "line",
+                hcaes(x = date,
+                      y = price))
+```
+

@@ -1,0 +1,64 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Two capstone projects: 
+
+Import ETF data, calculate returns. save as either xts or tibble. build up line charts. Take the tibble, create scatters, histogram, density of returns, scatter with regression (which is running CAPM). Port to Shiny to make it interactive.
+
+By the end of the course, a student will be able to build an interactive data visualization of ETF or stock returns in a Shiny application. Those returns could be in the form of an xts time series or a tidy tibble. A student will be able to take either of those data structures and use the best highcharter code flow for visualization. In particular, a student will be able to start with an xts or time series object and then use the highchart(type = "stock") code flow to visualize the time series or multiple time series. The student will be able to use the same code flow to visualize rolling calculations, such as the rolling mean, which are crucial in finance.  For tidy tibbles of financial data, the student will be able to use the hchart(type = "chart type", hcaes = ...) code flow to visualize data that might contain many groups. The student will also be able to use this flow to create scatter plots, density charts, histograms and scatters with regression line. Finally, the student will have the tools to incorporate these visualizations into an RMarkdown document or Shiny application.
+
+
+By the end of the course, the student will know how to use the following code flows and which is better suited for xts and tibble objects:
+
+highchart xts capstone
+
+Learning objective: Take an excel spreadsheet containing prices for 5 commodities, convert to xts, and use highcharter to visualize the prices of gold, platinum and palladium. Make sure the tooltip displays the name of each series and includes the `$` sign - which is especially important because commodities can priced in different currencies.
+
+Solution code: 
+
+```{r}
+library(highcharter)
+
+highchart(type = "stock") %>% 
+  hc_add_series(commodities$gold, color = "yellow", name = "gold") %>% 
+  hc_add_series(commodities$platinum, color = "gray", name = "platinum") %>% 
+  hc_add_series(commodities$palladium, color = "cornflowerblue", name = "palladium") %>% 
+  hc_title(text = "Gold, Palladium and Platinum 2017") %>%
+  hc_legend(enabled = TRUE) %>% 
+  hc_yAxis(labels = list(format = "${value:,.2f}")) %>% 
+  hc_tooltip(pointFormat = "{point.series.name}: ${point.y:.2f}")
+
+```
+
+
+
+Tibble capstone. You have just been given an excel spreadsheet of ETF prices and have been asked to chart the prices, then tranform them to returns explore the distributions of each ETF's returns, and whether they exhibit some relationsip with each other.  The person requesting this work prefers to work with tidy tibbles and has asked you make the data tidy before passing it to highcharter for visualization. 
+
+Step 1: 
+
+etf_price <-   
+read_excel("file_name.xlsx") %>%
+mutate(date = ymd(date)) %>% 
+("View")
+
+hchart(etf_tidy, type = "line/scatter/histogram/density", hcaes (x = date, y = return, group = etf)) %>% 
+hc_title(...) %>% 
+hc_subtitle(...) %>% 
+hc_yAxis(...) %>% 
+hc_xAxis(...) %>% 
+hc_tooltip(...)
+
+renderHighchart()
+highchartOutput()
+
+We could add other projects that are not specific to stock market data because the lessons in the course apply to any financial or economic time series, such as gdp or employment data.  I decided to work with just stock market data in the course so that students could focus on the visualization and not need to expend energy on different data sets.
+
+Import other economic data, such as gdp growth and visualize the same. 
+
+Port both over to Shiny to make it interactive.
+
+Working title: "Highcharter for Finance: visualizing tidy time series with Shiny"
+One sentence abstract: "We will code through a Shiny app that wrangles/transforms financial time series using tidy principles and then uses Highcharter, and it's ggplot2-inspired grammar, to visualize that tidy data."
+Why I think valuable to audience: "For those new to Shiny, a nice introduction to htmlwidgets and highcharter in particular. For the experienced Shiny builders, an example of how to use tidy data and ggplot-like logic with highcharter, which is not a well-known feature."
